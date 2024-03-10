@@ -32,6 +32,10 @@ import { DialogFilterRequestComponent } from '../components/dialog-filter-reques
       @if(total != -1) {
         <span class="text-xs">Total: {{total}}</span>
 
+        <button (click)="download()" class="ml-2" mat-icon-button>
+          <mat-icon>download</mat-icon>
+        </button>
+
         <button (click)="fetch()" class="ml-2" mat-icon-button>
           <mat-icon>refresh</mat-icon>
         </button>
@@ -72,7 +76,7 @@ import { DialogFilterRequestComponent } from '../components/dialog-filter-reques
 export class RequestComponent {
   public total: number = -1;
   public data: any[] = [];
-  public columns: string[] = ['id', 'method', 'path', 'host', 'ip', 'network', 'isp', 'ispType', 'country', 'city', 'referer', 'os', 'browser', 'device', 'screen', 'requestedAt', 'responsedAt', 'userAgent'];
+  public columns: string[] = ['id', 'method', 'path', 'host', 'ip', 'network', 'isp', 'ispType', 'country', 'city', 'lat', 'lon', 'referer', 'os', 'browser', 'device', 'screen', 'requestedAt', 'responsedAt', 'userAgent'];
 
   public get filters(): any[] {
     return Object.keys(this.filter).map((key) => {
@@ -135,6 +139,29 @@ export class RequestComponent {
         this.data = res.data;
         this.total = res.meta.total;
         this.availableFilters = res.meta.filters;
+      }
+    })
+  }
+
+  public download() {
+    this.apiService.requests(this.filter).subscribe((res: any) => {
+      if(res.status) {
+        let csv = '';
+
+        // add headers
+        csv += res.data[0] ? Object.keys(res.data[0]).join(',') + '\n' : '';
+
+        csv += res.data.map((item: any) => {
+          return Object.keys(item).map((key) => item[key]).join(',');
+        }).join('\n');
+
+        let blob = new Blob([csv], { type: 'text/csv' });
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = `requests-${Date.now()}.csv`
+        a.click();
+        window.URL.revokeObjectURL(url);
       }
     })
   }
