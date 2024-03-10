@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Localhost</title>
+</head>
+<body>
+    <!-- show blocked message -->
+    <% if (blocked) { %>
+        <h1>Blocked</h1>
+        <p>You are blocked from accessing this website.</p>
+    <% } else { %>
+        <h1>Localhost</h1>
+        <p>Welcome to localhost.</p>
+    <% } %>
+
+    <script>
+        window.onload = () => {
+            // screen size
+            var width = window.screen.width;
+            var height = window.screen.height;
+
+            var responsedAt = new Date().toISOString();
+            
+            fetch('/api/v1/track', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: parseInt("<%= id %>"),
+                    screen: `${width}x${height}`,
+                    responsedAt,
+                })
+            })
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+/* You can add global styles to this file, and also import other style files */
+@use "@angular/material" as mat;
+@use "@angular/material-experimental" as matx;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+$theme: matx.define-theme(
+  (
+    color: (
+      theme-type: light,
+    ),
+    typography: (
+      brand-family: "Roboto",
+      bold-weight: 900,
+    ),
+  )
+);
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+html {
+  // Apply the base theme at the root, so it will be inherited by the whole app.
+  @include mat.all-component-themes($theme);
+}
+
+td {
+  background-color: inherit !important;
+}
+
+.mdc-evolution-chip__text-label {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+
+  cursor: pointer !important;
+}
+
+mat-chip {
+  cursor: pointer !important;
+
+  mat-icon {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 16px !important;
+  }
+}
+
+.cdk-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background-color: rgba(0, 0, 0, 0.1);
+  --tw-backdrop-blur: blur(8px);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness)
+    var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale)
+    var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert)
+    var(--tw-backdrop-opacity) var(--tw-backdrop-saturate)
+    var(--tw-backdrop-sepia);
+}
+
+.mat-mdc-dialog-container {
+  position: fixed !important;
+  inset: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 30 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  max-width: unset !important;
+  min-width: 300px !important;
+  max-height: unset !important;
+  min-height: unset !important;
+}
+
+.mdc-dialog__container {
+  height: fit-content !important;
+  width: fit-content !important;
+}
+
+@layer components {
+  label.form-control {
+    @apply flex flex-col gap-2;
+
+    span {
+      @apply text-xs px-1 w-full;
+    }
+
+    select,
+    input {
+      @apply w-full border border-gray-300 rounded-lg px-2 h-[48px] bg-transparent;
+
+      &:hover {
+        @apply border-black;
+      }
+    }
+  }
+}
