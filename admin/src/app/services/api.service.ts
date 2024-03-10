@@ -33,6 +33,16 @@ export class ApiService {
     })
   }
 
+  public deleteRequests() {
+    return this.httpService.request<any>({
+      method: 'DELETE',
+      path: `/api/v1/request`,
+      header: {
+        'x-access-token': this.httpService.token
+      }
+    })
+  }
+
   public firewall(params: any = {}) {
     return this.httpService.request<any>({
       method: 'GET',

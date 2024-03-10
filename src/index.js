@@ -148,6 +148,17 @@ app.get('/api/v1/request', hasAccess, async (req, res) => {
     })
 });
 
+app.delete('/api/v1/request', hasAccess, async (req, res) => {
+    await divarchi.database.clear('request');
+
+    res.json({
+        status: true,
+        code: 200,
+        i18n: 'REQUEST_DELETED',
+        message: 'Request deleted'
+    })
+});
+
 app.get('/api/v1/firewall', hasAccess, async (req, res) => {
     const data = await divarchi.database.select('firewall', {
         ...req.query,
@@ -248,7 +259,7 @@ app.use('/', divarchi.middleware(), (req, res) => {
         const { id, host, blocked } = req.divarchi;
 
         // render of {host}/index.ejs
-        res.render(`${host}/index`, { id, host, blocked });
+        res.status(blocked ? 500 : 502).render(`${host}/index`, { id, host, blocked });
     } else {
         res.status(500).send('Internal Server Error');
     }

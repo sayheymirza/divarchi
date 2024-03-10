@@ -32,6 +32,10 @@ import { DialogFilterRequestComponent } from '../components/dialog-filter-reques
       @if(total != -1) {
         <span class="text-xs">Total: {{total}}</span>
 
+        <button (click)="delete()" class="ml-2" mat-icon-button>
+          <mat-icon>delete</mat-icon>
+        </button>
+
         <button (click)="download()" class="ml-2" mat-icon-button>
           <mat-icon>download</mat-icon>
         </button>
@@ -141,6 +145,16 @@ export class RequestComponent {
         this.availableFilters = res.meta.filters;
       }
     })
+  }
+
+  public delete() {
+    if(confirm('Are you sure?')) {
+      this.apiService.deleteRequests().subscribe((res: any) => {
+        if(res.status) {
+          this.fetch();
+        }
+      })
+    }
   }
 
   public download() {
