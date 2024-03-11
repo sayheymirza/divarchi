@@ -140,7 +140,7 @@ export class RequestComponent {
   public fetch() {
     this.apiService.requests(this.filter).subscribe((res: any) => {
       if(res.status) {
-        this.data = res.data;
+        this.data = res.data.filter((item: any)=> item.deleted == 0)
         this.total = res.meta.total;
         this.availableFilters = res.meta.filters;
       }
