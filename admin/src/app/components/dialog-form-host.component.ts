@@ -20,7 +20,7 @@ import { ApiService } from '../services/api.service';
       <label class="form-control">
         <span>Host</span>
 
-        <input [(ngModel)]="form.host" placeholder="https://example.com" />
+        <input [(ngModel)]="form.host" placeholder="example.com" />
       </label>
 
       <!-- action select box -->

@@ -37,9 +37,34 @@ app.use('/admin', (req, res) => {
 
 app.use('/', divarchi.middleware.firewall({
     skipFiles: true,
+    onBlock: async (params) => {
+        // get list of hosts
+        const hosts = (await divarchi.database.select('host', { deleted: 0 })).map((host) => host.host).filter((host) => host != params.host);
+
+        if(hosts.length > 1) {
+            const [role] = await divarchi.database.select('firewall', { id: params.role });
+            const roles = JSON.stringify(role.roles);
+            
+            // duplicate firewall rule
+            for (const host of hosts) {
+                divarchi.database.insert('firewall', {
+                    host: host,
+                    roles: roles,
+                    action: params.action,
+                    hash: Buffer.from(`${host}-${params.action}-${roles}`).toString('base64')
+                })
+            }
+        }
+
+        // @TODO: alert new block
+    },
 }), (req, res) => {
     if(req.divarchi) {
         const { $action } = req.divarchi;
+
+        if($action && $action.confg && $action.config.status) {
+            res.status($action.config.status);
+        }
 
         switch ($action.function) {
             case 'blank':
@@ -60,6 +85,21 @@ app.use('/', divarchi.middleware.firewall({
             case 'redirect':
                 var { targetHost } = $action.config;
                 res.redirect(targetHost);
+                break;
+
+            case 'render':
+                var { file, data } = $action.config;
+                try {
+                    data = JSON.params(data);
+                    
+                } catch (error) {
+                    data = {};
+                }
+
+                res.render(file, {
+                    data: data,
+                    divarchi: req.divarchi,
+                });
                 break;
         
             default:

@@ -53,11 +53,15 @@ import { DialogFormFirewallComponent } from '../components/dialog-form-firewall.
           </ng-container>
 
         <ng-container matColumnDef="options">
-            <th mat-header-cell *matHeaderCellDef class="w-[120px]">
+            <th mat-header-cell *matHeaderCellDef class="w-[160px]">
               <strong></strong>
             </th>
 
-            <td mat-cell *matCellDef="let element" class="w-[120px]">
+            <td mat-cell *matCellDef="let element" class="w-[160px]">
+              <button (click)="openFormDialog({  roles: element.roles, action: element.action })" mat-icon-button>
+                <mat-icon>content_copy</mat-icon>
+              </button>
+
               <button (click)="openFormDialog(element)" mat-icon-button>
                 <mat-icon>edit</mat-icon>
               </button>

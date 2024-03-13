@@ -1,20 +1,21 @@
 import { Component } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatTableModule } from "@angular/material/table";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatIconModule } from "@angular/material/icon";
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from "@angular/material/button";
+import { MatPaginatorModule } from "@angular/material/paginator";
 import { ApiService } from '../services/api.service';
 import { DialogFilterRequestComponent } from '../components/dialog-filter-request.component';
-import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-request',
   standalone: true,
-  imports: [MatTableModule, MatChipsModule, MatIconModule, MatButtonModule, NgClass],
+  imports: [MatTableModule, MatChipsModule, MatIconModule, MatButtonModule, MatPaginatorModule, NgClass],
   template: `
-    <section class="flex flex-nowrap items-center gap-2 px-4 py-2 border-b">
+    <section class="flex flex-nowrap items-center gap-2 px-4 py-2 border-b overflow-x-scroll overflow-y-hidden scrollbar-none">
      <mat-chip-set class="flex-1">
         <mat-chip (click)="openFilterDialog()">
           <mat-icon>filter_alt</mat-icon>
@@ -31,7 +32,7 @@ import { ActivatedRoute, Router } from '@angular/router';
       </mat-chip-set>
 
       @if(total != -1) {
-        <span class="text-xs">Total: {{total}}</span>
+        <span class="text-xs whitespace-pre">Total: {{total}}</span>
 
         <button (click)="delete()" class="ml-2" mat-icon-button>
           <mat-icon>delete</mat-icon>
@@ -41,14 +42,14 @@ import { ActivatedRoute, Router } from '@angular/router';
           <mat-icon>download</mat-icon>
         </button>
 
-        <button (click)="fetch()" class="ml-2" mat-icon-button>
+        <button (click)="page = 1; fetch(); aggregate()" class="ml-2" mat-icon-button>
           <mat-icon>refresh</mat-icon>
         </button>
       }
     </section>
 
     <section class="flex-1 overflow-scroll">
-      <table class="w-full" mat-table [dataSource]="data">
+      <table class="w-full h-full" mat-table [dataSource]="data">
 
         @for (item of columns; track $index) {
           <ng-container [matColumnDef]="item">
@@ -57,7 +58,7 @@ import { ActivatedRoute, Router } from '@angular/router';
             </th>
 
             <td mat-cell *matCellDef="let element">
-              <span class="max-w-[300px] truncate">
+              <span class="block max-w-[350px] truncate" title="{{element[item]}}">
                 {{element[item]}} 
               </span>
             </td>
@@ -73,6 +74,16 @@ import { ActivatedRoute, Router } from '@angular/router';
         ></tr>
       </table>
     </section>
+
+    <section>
+      <mat-paginator 
+        [length]="total"
+        [pageSize]="limit"
+        [pageIndex]="page - 1"
+        (page)="page = $event.pageIndex + 1; fetch()"
+      >
+      </mat-paginator>
+    </section>
   `,
   host: {
     class: 'flex flex-col h-full w-full'
@@ -80,6 +91,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class RequestComponent {
   public total: number = -1;
+  public limit: number = 20;
+  public page: number = 1;
+  public last: number = 1;
   public data: any[] = [];
   public columns: string[] = ['id', 'method', 'path', 'host', 'ip', 'network', 'isp', 'ispType', 'country', 'city', 'lat', 'lon', 'referer', 'os', 'browser', 'platform', 'device', 'createdAt', 'userAgent'];
 
@@ -87,10 +101,10 @@ export class RequestComponent {
     return Object.keys(this.filter).map((key) => {
       let value = this.filter[key];
 
-      if(value == '0' || value == '1') {
+      if (value == '0' || value == '1') {
         value = value == '1' ? 'Yes' : 'No';
       }
-    
+
       return {
         key: key.slice(0, 1).toUpperCase() + key.slice(1),
         value,
@@ -100,22 +114,32 @@ export class RequestComponent {
 
   private filter: any = {}
   private availableFilters: any = {}
-  
+
   constructor(
     private apiService: ApiService,
     private dialog: MatDialog,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-  ) {}
+  ) { }
 
   ngOnInit() {
     setTimeout(() => {
       const queryParams = this.activatedRoute.snapshot.queryParams;
 
-      for(let key in queryParams) {
+      if (queryParams['page']) {
+        try {
+          this.page = parseInt(queryParams['page']);
+        } catch (error) {
+
+        }
+      }
+
+      for (let key in queryParams) {
+        if(key == 'page') continue;
         this.filter[key] = queryParams[key];
       }
 
+      this.aggregate();
       this.fetch();
     }, 0);
   }
@@ -127,9 +151,9 @@ export class RequestComponent {
         filters: this.availableFilters
       }
     }).afterClosed().subscribe((res) => {
-      if(res) {
-        for(let key in res) {
-          if(res[key].length > 0) {
+      if (res) {
+        for (let key in res) {
+          if (res[key].length > 0) {
             this.filter[key] = res[key];
           }
         }
@@ -143,50 +167,40 @@ export class RequestComponent {
     key = key.slice(0, 1).toLowerCase() + key.slice(1);
 
     delete this.filter[key];
-    
+
     this.fetch();
   }
 
   public fetch() {
     this.apiService.requests({
-      filter: this.filter,
-      aggregate: [
-        'method',
-        'path',
-        'host',
-        'ip',
-        'network',
-        'isp',
-        'ispType',
-        'country',
-        'city',
-        'lat',
-        'lon',
-        'referer',
-        'os',
-        'browser',
-        'platform',
-        'device',
-      ],
+      filter: {
+        ...this.filters,
+        deleted: 0,
+      },
+      page: this.page,
+      limit: this.limit
     }).subscribe((res: any) => {
-      if(res.status) {
-        this.data = res.data.filter((item: any)=> item.deleted == 0)
+      if (res.status) {
+        this.data = res.data;
         this.total = res.meta.total;
-        this.availableFilters = res.meta.aggregate;
+        this.last = res.meta.last;
 
         // change router query params
         this.router.navigate([], {
           relativeTo: this.activatedRoute,
-          queryParams: this.filter
+          queryParams: {
+            ...this.filter,
+            page: this.page == 1 ? undefined : this.page,
+          },
         })
       }
     })
   }
 
   public delete() {
-    if(confirm('Are you sure?')) {
+    if (confirm('Are you sure?')) {
       this.apiService.deleteRequests().subscribe((res: any) => {
-        if(res.status) {
+        if (res.status) {
           this.fetch();
         }
       })
@@ -195,7 +209,7 @@ export class RequestComponent {
 
   public download() {
     this.apiService.requests(this.filter).subscribe((res: any) => {
-      if(res.status) {
+      if (res.status) {
         let csv = '';
 
         // add headers
@@ -212,6 +226,14 @@ export class RequestComponent {
         a.download = `requests-${Date.now()}.csv`
         a.click();
         window.URL.revokeObjectURL(url);
+      }
+    })
+  }
+
+  public aggregate() {
+    this.apiService.aggregateRequests().subscribe((res: any) => {
+      if (res.status) {
+        this.availableFilters = res.data;
       }
     })
   }

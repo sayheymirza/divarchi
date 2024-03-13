@@ -25,6 +25,13 @@ export class ApiService {
     })
   }
 
+  public aggregateRequests() {
+    return this.httpService.request<any>({
+      method: 'GET',
+      path: `/api/v1/request/aggregate`,
+    })
+  }
+
   public deleteRequests() {
     return this.httpService.request<any>({
       method: 'DELETE',

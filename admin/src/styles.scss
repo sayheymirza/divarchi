@@ -96,6 +96,7 @@ mat-chip {
       @apply text-xs px-1 w-full;
     }
 
+    textarea,
     select,
     input {
       @apply w-full border border-gray-300 rounded-lg px-2 h-[48px] bg-transparent;

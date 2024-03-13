@@ -99,12 +99,11 @@ import { ApiService } from '../services/api.service';
 })
 export class DialogFormFirewallComponent {
   public roles: IRole[] = [];
-  public keys: string[] = ['method', 'path', 'host', 'ip', 'network', 'isp', 'ispType', 'country', 'city', 'referer', 'os', 'browser', 'device', 'screen'];
+  public keys: string[] = ['method', 'path', 'host', 'ip', 'network', 'isp', 'ispType', 'country', 'city', 'referer', 'os', 'browser', 'device', 'platform'];
   public actions: any[] = [];
   public hosts: any[] = [];
   public host: string = '';
   public action: number = -1;
-
 
   constructor(
     @Inject(MAT_DIALOG_DATA)

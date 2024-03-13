@@ -30,6 +30,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
           <option value="proxy">Proxy</option>
           <option value="blank">Blank</option>
           <option value="redirect">Redirect</option>
+          <option value="render">Render</option>
         </select>
       </label>
 
@@ -41,6 +42,29 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
           <input type="url" [(ngModel)]="form.targetHost" placeholder="https://example.com" />
         </label>
       }
+
+      @if(form.function == "render")  {
+        <!-- file -->
+        <label class="form-control">
+          <span>File</span>
+
+          <input type="text" placeholder="Path of file" [(ngModel)]="form.file" />
+        </label>
+
+        <!-- data -->
+        <label class="form-control">
+          <span>Data</span>
+
+          <textarea [(ngModel)]="form.data" placeholder="Data to render"></textarea>
+        </label>
+      }
+
+      <!-- status code number -->
+      <label class="form-control">
+        <span>Status code</span>
+
+        <input type="number" [(ngModel)]="form.status" placeholder="200" min="100" max="599" />
+      </label>
 
       <!-- checkbox: Enable x-divarchi-for in request header -->
       <mat-checkbox
@@ -70,10 +94,13 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 })
 export class DialogFormActionComponent {
   public form: any = {
+    status: 200,
     name: "",
     function: "",
     targetHost: "",
-    xDivarchiFor: false
+    xDivarchiFor: false,
+    file: "",
+    data: ""
   }
 
   constructor(
@@ -84,11 +111,18 @@ export class DialogFormActionComponent {
 
   ngOnInit() {
     if (this.data) {
+      if(typeof this.data.config == 'string') {
+        this.data.config = JSON.parse(this.data.config);
+      }
+
       this.form = {
+        status: this.data.status ?? 200,
         name: this.data.name,
         function: this.data.function,
         targetHost: this.data.config.targetHost,
-        xDivarchiFor: this.data.config.xDivarchiFor
+        xDivarchiFor: this.data.config.xDivarchiFor,
+        file: this.data.file,
+        data: this.data.data
       }
     }
   }
@@ -103,8 +137,11 @@ export class DialogFormActionComponent {
         name: this.form.name,
         function: this.form.function,
         config: {
+          status: this.form.status,
           targetHost: this.form.targetHost,
-          xDivarchiFor: this.form.xDivarchiFor
+          xDivarchiFor: this.form.xDivarchiFor,
+          file: this.form.file,
+          data: this.form.data
         }
       }
     );
