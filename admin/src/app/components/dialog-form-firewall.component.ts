@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from "@angular/material/icon";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-dialog-form-firewall',
@@ -20,8 +21,37 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
     </section>
 
     <section class="flex flex-col gap-4 border-t border-b w-[600px] max-h-[600px] overflow-y-scroll">
+      <div class="grid grid-cols-2 gap-4 border-b p-4">
+        <!-- host -->
+        <label class="form-control">
+          <span>Host</span>
+
+          <select [(ngModel)]="host">
+            <option *ngFor="let item of hosts" [value]="item.host">
+              {{item.host}}
+            </option>
+          </select>
+        </label>
+
+        <!-- action -->
+        <label class="form-control">
+          <span>Action</span>
+
+          <select [(ngModel)]="action">
+            <option *ngFor="let item of actions" [value]="item.id">
+              {{item.name}}
+            </option>
+          </select>
+        </label>
+      </div>
+
       @if(roles.length == 0) {
-        <p class="text-center my-10">No roles</p>
+        <div class="flex flex-col items-center justify-center h-[100px]">
+          <button (click)="add()" mat-button color="primary" class="gap-2 w-fit">
+            <mat-icon>add</mat-icon>
+            <span>Add role</span>
+          </button>
+        </div>
       } @else {
         @for (role of roles; track $index) {
           <div class="flex flex-nowrap items-center justify-between gap-2 px-4">
@@ -70,24 +100,33 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 export class DialogFormFirewallComponent {
   public roles: IRole[] = [];
   public keys: string[] = ['method', 'path', 'host', 'ip', 'network', 'isp', 'ispType', 'country', 'city', 'referer', 'os', 'browser', 'device', 'screen'];
+  public actions: any[] = [];
+  public hosts: any[] = [];
+  public host: string = '';
+  public action: number = -1;
 
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public data: any,
-    private ref: MatDialogRef<DialogFormFirewallComponent>
+    private ref: MatDialogRef<DialogFormFirewallComponent>,
+    private apiService: ApiService
   ) {}
 
   ngOnInit() {
-    const { roles } = this.data;
-
-    if(roles) {
-      this.roles = roles.split(',').map((role: string) => {
-        let [key, value] = role.split('=');
-        return { key, value };
-      });
+    if(this.data) {
+      this.roles = JSON.parse(this.data.roles);
+      this.host = this.data.host;
+      this.action = this.data.action;
     }
 
+    this.apiService.actions().subscribe((res) => {
+      this.actions = res.data;
+    });
+
+    this.apiService.hosts().subscribe((res) => {
+      this.hosts = res.data;
+    });
   }
 
   public add() {
@@ -104,7 +143,11 @@ export class DialogFormFirewallComponent {
 
   public submit() {
     this.ref.close(
-      this.roles,
+      {
+        host: this.host,
+        action: this.action,
+        roles: this.roles,
+      }
     );
   }
 

@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from "@angular/material/button";
 import { ApiService } from '../services/api.service';
 import { DialogFilterRequestComponent } from '../components/dialog-filter-request.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-request',
@@ -56,7 +57,7 @@ import { DialogFilterRequestComponent } from '../components/dialog-filter-reques
             </th>
 
             <td mat-cell *matCellDef="let element">
-              <span class="whitespace-pre">
+              <span class="max-w-[300px] truncate">
                 {{element[item]}} 
               </span>
             </td>
@@ -80,7 +81,7 @@ import { DialogFilterRequestComponent } from '../components/dialog-filter-reques
 export class RequestComponent {
   public total: number = -1;
   public data: any[] = [];
-  public columns: string[] = ['id', 'method', 'path', 'host', 'ip', 'network', 'isp', 'ispType', 'country', 'city', 'lat', 'lon', 'referer', 'os', 'browser', 'device', 'screen', 'requestedAt', 'responsedAt', 'userAgent'];
+  public columns: string[] = ['id', 'method', 'path', 'host', 'ip', 'network', 'isp', 'ispType', 'country', 'city', 'lat', 'lon', 'referer', 'os', 'browser', 'platform', 'device', 'createdAt', 'userAgent'];
 
   public get filters(): any[] {
     return Object.keys(this.filter).map((key) => {
@@ -90,7 +91,6 @@ export class RequestComponent {
         value = value == '1' ? 'Yes' : 'No';
       }
     
-
       return {
         key: key.slice(0, 1).toUpperCase() + key.slice(1),
         value,
@@ -103,11 +103,21 @@ export class RequestComponent {
   
   constructor(
     private apiService: ApiService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
   ) {}
 
   ngOnInit() {
-    this.fetch();
+    setTimeout(() => {
+      const queryParams = this.activatedRoute.snapshot.queryParams;
+
+      for(let key in queryParams) {
+        this.filter[key] = queryParams[key];
+      }
+
+      this.fetch();
+    }, 0);
   }
 
   public openFilterDialog() {
@@ -138,11 +148,37 @@ export class RequestComponent {
   }
 
   public fetch() {
-    this.apiService.requests(this.filter).subscribe((res: any) => {
+    this.apiService.requests({
+      filter: this.filter,
+      aggregate: [
+        'method',
+        'path',
+        'host',
+        'ip',
+        'network',
+        'isp',
+        'ispType',
+        'country',
+        'city',
+        'lat',
+        'lon',
+        'referer',
+        'os',
+        'browser',
+        'platform',
+        'device',
+      ],
+    }).subscribe((res: any) => {
       if(res.status) {
         this.data = res.data.filter((item: any)=> item.deleted == 0)
         this.total = res.meta.total;
-        this.availableFilters = res.meta.filters;
+        this.availableFilters = res.meta.aggregate;
+
+        // change router query params
+        this.router.navigate([], {
+          relativeTo: this.activatedRoute,
+          queryParams: this.filter
+        })
       }
     })
   }

@@ -1,10 +1,12 @@
+require('dotenv/config');
+
 const uuid = require('uuid');
 
 const fs = require('fs');
 const path = require('path');
 
 // http access file .htaccess
-const httpaccessfile = path.join(process.cwd(), '.htaccess');
+const httpaccessfile = process.env.HTACCESS ?? path.join(process.cwd(), '.htaccess');
 
 // if .htaccess file not exists, create it
 if (!fs.existsSync(httpaccessfile)) {

@@ -20,6 +20,14 @@ import { ApiService } from './services/api.service';
           Requests
         </a>
         
+        <a routerLink="/action" mat-button>
+          Actions
+        </a>
+
+        <a routerLink="/host" mat-button>
+          Hosts
+        </a>
+        
         <a routerLink="/firewall" mat-button>
           Firewall
         </a>

@@ -13,7 +13,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
     <section class="flex flex-col gap-2 p-4">
       <strong>Filter requests</strong>
     </section>
-    <form [formGroup]="filter" class="grid grid-cols-2 gap-4 p-4 border-t border-b w-[600px] max-h-[600px] overflow-y-scroll">
+    <form [formGroup]="filter" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border-t border-b md:w-[600px] max-h-[600px] overflow-y-scroll">
       <!-- host -->
       <label class="form-control">
         <span>Host</span>
@@ -181,14 +181,14 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
         </select>
       </label>
 
-      <!-- screen -->
+      <!-- platform -->
       <label class="form-control">
-        <span>Screen</span>
+        <span>Platform</span>
 
-        <select formControlName="screen">
+        <select formControlName="platform">
           <option value="">All</option>
-          <option *ngFor="let screen of values.screen" [value]="screen">
-            {{screen}}
+          <option *ngFor="let platform of values.platform" [value]="platform">
+            {{platform}}
           </option>
         </select>
       </label>
@@ -228,7 +228,7 @@ export class DialogFilterRequestComponent {
     os: new FormControl(''),
     browser: new FormControl(''),
     device: new FormControl(''),
-    screen: new FormControl(''),
+    platform: new FormControl(''),
   });
 
   public values: any = {};
@@ -268,7 +268,7 @@ export class DialogFilterRequestComponent {
       os: '',
       browser: '',
       device: '',
-      screen: '',
+      platform: '',
     })
   }
 }

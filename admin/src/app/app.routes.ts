@@ -10,6 +10,14 @@ export const routes: Routes = [
         loadComponent: ()=> import('./routes/request.component').then(m => m.RequestComponent)
     },
     {
+        path: 'action',
+        loadComponent: ()=> import('./routes/action.component').then(m => m.ActionComponent)
+    },
+    {
+        path: 'host',
+        loadComponent: ()=> import('./routes/host.component').then(m => m.HostComponent)
+    },
+    {
         path: '**',
         redirectTo: '/request',
     },

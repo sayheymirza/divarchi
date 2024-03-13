@@ -22,6 +22,8 @@ export class HttpService {
 
     let headers: any = param.header ?? { };
 
+    headers['x-access-token'] = this.token;
+
     return this.http
       .request<T>(
         new HttpRequest(param.method, url, param.data, {
@@ -43,7 +45,6 @@ export class HttpService {
 
 interface RequestParam {
   method: string;
-  site?: boolean;
   path?: string;
   data?: any;
   auth?: boolean;
