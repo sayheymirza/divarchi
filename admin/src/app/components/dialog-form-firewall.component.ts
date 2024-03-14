@@ -5,11 +5,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from "@angular/material/icon";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { ApiService } from '../services/api.service';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-dialog-form-firewall',
   standalone: true,
-  imports: [FormsModule, MatButtonModule, MatIconModule, NgForOf],
+  imports: [FormsModule, MatButtonModule, MatIconModule, MatCheckboxModule, NgForOf],
   template: `
     <section class="flex flex-nowrap items-center justify-between gap-2 p-4">
       <strong>Firewall role</strong>
@@ -43,6 +44,16 @@ import { ApiService } from '../services/api.service';
             </option>
           </select>
         </label>
+
+        <!-- automaticDuplicate -->
+        <mat-checkbox [(ngModel)]="automaticDuplicate">
+          Automatic duplicate
+        </mat-checkbox>
+
+        <!-- automaticBlockIP -->
+        <mat-checkbox [(ngModel)]="automaticBlockIP">
+          Automatic block IP
+        </mat-checkbox>
       </div>
 
       @if(roles.length == 0) {
@@ -104,6 +115,8 @@ export class DialogFormFirewallComponent {
   public hosts: any[] = [];
   public host: string = '';
   public action: number = -1;
+  public automaticDuplicate: boolean = false;
+  public automaticBlockIP: boolean = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -117,6 +130,8 @@ export class DialogFormFirewallComponent {
       this.roles = JSON.parse(this.data.roles);
       this.host = this.data.host;
       this.action = this.data.action;
+      this.automaticDuplicate = this.data.automaticDuplicate;
+      this.automaticBlockIP = this.data.automaticBlockIP;
     }
 
     this.apiService.actions().subscribe((res) => {
@@ -146,6 +161,8 @@ export class DialogFormFirewallComponent {
         host: this.host,
         action: this.action,
         roles: this.roles,
+        automaticDuplicate: this.automaticDuplicate,
+        automaticBlockIP: this.automaticBlockIP
       }
     );
   }

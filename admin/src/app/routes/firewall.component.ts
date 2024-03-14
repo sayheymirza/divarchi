@@ -52,6 +52,30 @@ import { DialogFormFirewallComponent } from '../components/dialog-form-firewall.
             </td>
           </ng-container>
 
+        <ng-container matColumnDef="automaticDuplicate">
+            <th mat-header-cell *matHeaderCellDef>
+              <strong>AUTOMATIC DUPLICATE</strong>
+            </th>
+
+            <td mat-cell *matCellDef="let element">
+              <span class="whitespace-pre">
+                <mat-icon>{{ element['automaticDuplicate'] ? 'done' : 'close' }}</mat-icon>
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="automaticBlockIP">
+            <th mat-header-cell *matHeaderCellDef>
+              <strong>AUTOMATIC BLOCK IP</strong>
+            </th>
+
+            <td mat-cell *matCellDef="let element">
+              <span class="whitespace-pre">
+                <mat-icon>{{ element['automaticBlockIP'] ? 'done' : 'close' }}</mat-icon>
+              </span>
+            </td>
+          </ng-container>
+
         <ng-container matColumnDef="options">
             <th mat-header-cell *matHeaderCellDef class="w-[160px]">
               <strong></strong>
@@ -94,7 +118,7 @@ import { DialogFormFirewallComponent } from '../components/dialog-form-firewall.
 export class FirewallComponent {
   public total: number = -1;
   public data: any[] = [];
-  public columns: string[] = ['id', 'host', 'roles', 'options'];
+  public columns: string[] = ['id', 'host', 'roles', 'automaticDuplicate', 'automaticBlockIP', 'options'];
     
   constructor(
     private apiService: ApiService,
