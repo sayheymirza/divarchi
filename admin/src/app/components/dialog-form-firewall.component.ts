@@ -130,8 +130,8 @@ export class DialogFormFirewallComponent {
       this.roles = JSON.parse(this.data.roles);
       this.host = this.data.host;
       this.action = this.data.action;
-      this.automaticDuplicate = this.data.automaticDuplicate;
-      this.automaticBlockIP = this.data.automaticBlockIP;
+      this.automaticDuplicate = this.data.automaticDuplicate == 1;
+      this.automaticBlockIP = this.data.automaticBlockIP == 1;
     }
 
     this.apiService.actions().subscribe((res) => {
