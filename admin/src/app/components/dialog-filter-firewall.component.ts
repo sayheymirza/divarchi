@@ -8,12 +8,12 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ApiService } from '../services/api.service';
 
 @Component({
-  selector: 'app-dialog-form-firewall',
+  selector: 'app-dialog-filter-firewall',
   standalone: true,
   imports: [FormsModule, MatButtonModule, MatIconModule, MatCheckboxModule, NgForOf],
   template: `
     <section class="flex flex-nowrap items-center justify-between gap-2 p-4">
-      <strong>Firewall role</strong>
+      <strong>Filter firewall role</strong>
 
         <button (click)="add()" mat-icon-button>
           <mat-icon>add</mat-icon>
@@ -44,16 +44,6 @@ import { ApiService } from '../services/api.service';
             </option>
           </select>
         </label>
-
-        <!-- automaticDuplicate -->
-        <mat-checkbox [(ngModel)]="automaticDuplicate">
-          Automatic duplicate
-        </mat-checkbox>
-
-        <!-- automaticBlockIP -->
-        <mat-checkbox [(ngModel)]="automaticBlockIP">
-          Automatic block IP
-        </mat-checkbox>
       </div>
 
       @if(roles.length == 0) {
@@ -102,36 +92,33 @@ import { ApiService } from '../services/api.service';
       </button>
 
       <button (click)="submit()" mat-flat-button color="primary">
-        Submit
+        Apply
       </button>
     </section>
   `,
   styles: ``
 })
-export class DialogFormFirewallComponent {
+export class DialogFilterFirewallComponent {
   public roles: IRole[] = [];
   public keys: string[] = ['method', 'path', 'host', 'ip', 'network', 'isp', 'ispType', 'country', 'city', 'referer', 'os', 'browser', 'device', 'platform'];
   public actions: any[] = [];
   public hosts: any[] = [];
   public host: string = '';
-  public action: number = -1;
-  public automaticDuplicate: boolean = false;
-  public automaticBlockIP: boolean = false;
+  public action: string = '';
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public data: any,
-    private ref: MatDialogRef<DialogFormFirewallComponent>,
+    private ref: MatDialogRef<DialogFilterFirewallComponent>,
     private apiService: ApiService
   ) {}
 
+
   ngOnInit() {
     if(this.data) {
-      this.roles = JSON.parse(this.data.roles);
-      this.host = this.data.host;
-      this.action = this.data.action;
-      this.automaticDuplicate = this.data.automaticDuplicate == 1;
-      this.automaticBlockIP = this.data.automaticBlockIP == 1;
+      this.roles = this.data.roles ?? [];
+      this.host = this.data.host ?? '';
+      this.action = this.data.action ?? '';
     }
 
     this.apiService.actions().subscribe((res) => {
@@ -161,12 +148,9 @@ export class DialogFormFirewallComponent {
         host: this.host,
         action: this.action,
         roles: this.roles,
-        automaticDuplicate: this.automaticDuplicate,
-        automaticBlockIP: this.automaticBlockIP
       }
     );
   }
-
 }
 
 interface IRole {

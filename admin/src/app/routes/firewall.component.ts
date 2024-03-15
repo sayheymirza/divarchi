@@ -1,17 +1,46 @@
 import { Component } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { MatTableModule } from "@angular/material/table";
+import { MatChipsModule } from "@angular/material/chips";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatDialog } from '@angular/material/dialog';
+import { MatPaginatorModule } from "@angular/material/paginator";
 import { ApiService } from '../services/api.service';
 import { DialogFormFirewallComponent } from '../components/dialog-form-firewall.component';
+import { DialogFilterFirewallComponent } from '../components/dialog-filter-firewall.component';
 
 @Component({
   selector: 'app-firewall',
   standalone: true,
-  imports: [MatTableModule, MatButtonModule, MatIconModule, NgClass],
+  imports: [MatTableModule, MatChipsModule, MatIconModule, MatButtonModule, MatPaginatorModule, NgClass],
   template: `
+     <section class="flex flex-nowrap items-center gap-2 px-4 py-2 border-b overflow-x-scroll overflow-y-hidden scrollbar-none">
+     <mat-chip-set class="flex-1">
+        <mat-chip (click)="openFormDialog()">
+          <mat-icon>add</mat-icon>
+          <span>New Role</span>
+        </mat-chip>
+
+        <mat-chip (click)="openFilterDialog()">
+          <mat-icon>filter_alt</mat-icon>
+          <span>Filters</span>
+        </mat-chip>
+
+        @for (item of filters; track $index) {
+          <mat-chip>
+            <span>{{item.key}}: {{item.value}}</span>
+            <mat-icon (click)="removeFilter(item.key)">close</mat-icon>
+          </mat-chip>
+        }
+
+      </mat-chip-set>
+
+      @if(total != -1) {
+        <span class="text-xs whitespace-pre">Total: {{total}}</span>
+      }
+    </section>
+
     <section class="flex-1 overflow-scroll">
       <table class="w-full" mat-table [dataSource]="data">
 
@@ -106,10 +135,15 @@ import { DialogFormFirewallComponent } from '../components/dialog-form-firewall.
       </table>
     </section>
 
-    <button (click)="openFormDialog()" mat-fab color="primary" class="!fixed bottom-4 right-4 gap-2 min-w-[128px]">
-      <mat-icon>add</mat-icon>
-      <span>New role</span>
-    </button>
+    <section class="border-t">
+      <mat-paginator 
+        [length]="total"
+        [pageSize]="limit"
+        [pageIndex]="page - 1"
+        (page)="page = $event.pageIndex + 1; fetch()"
+      >
+      </mat-paginator>
+    </section>
   `,
     host: {
       class: 'flex flex-col h-full w-full'
@@ -117,8 +151,34 @@ import { DialogFormFirewallComponent } from '../components/dialog-form-firewall.
 })
 export class FirewallComponent {
   public total: number = -1;
+  public limit: number = 20;
+  public page: number = 1;
+  public last: number = 1;
   public data: any[] = [];
   public columns: string[] = ['id', 'host', 'roles', 'automaticDuplicate', 'automaticBlockIP', 'options'];
+
+  public get filters(): any[] {
+    return Object.keys(this.filter).map((key) => {
+      let value = this.filter[key];
+
+      if (value == '0' || value == '1') {
+        value = value == '1' ? 'Yes' : 'No';
+      }
+
+      if(key == 'roles') {
+        value = value.map((role: any) => {
+          return `${role.key}=${role.value}`;
+        }).join(' & ');
+      }
+
+      return {
+        key: key.slice(0, 1).toUpperCase() + key.slice(1),
+        value,
+      }
+    }).filter((item) => item.value && item.value.length > 0);
+  }
+
+  private filter: any = {}
     
   constructor(
     private apiService: ApiService,
@@ -154,6 +214,29 @@ export class FirewallComponent {
     });
   }
 
+  public openFilterDialog() {
+    this.dialog.open(DialogFilterFirewallComponent, {
+      data: this.filter,
+    }).afterClosed().subscribe((res) => {
+      if (res) {
+        for (let key in res) {
+          if (res[key].length > 0) {
+            this.filter[key] = res[key];
+          }
+        }
+        this.fetch();
+      }
+    });
+  }
+
+  public removeFilter(key: string) {
+    key = key.slice(0, 1).toLowerCase() + key.slice(1);
+
+    delete this.filter[key];
+
+    this.fetch();
+  }
+
   public delete(id: string) {
     if(confirm('Are you sure?')) {
       this.apiService.deleteRole(id).subscribe(() => {
@@ -162,8 +245,14 @@ export class FirewallComponent {
     }
   }
 
-  private fetch() {
-    this.apiService.roles().subscribe((res: any) => {
+  public fetch() {
+    console.log(this.filter);
+    
+    this.apiService.roles({
+      filter: this.filter,
+      limit: this.limit,
+      page: this.page,
+    }).subscribe((res: any) => {
       if(res.status) {
         this.data = res.data;
         this.total = res.meta.total;

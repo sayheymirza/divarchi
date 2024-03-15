@@ -7,7 +7,7 @@ import { filter, map, Observable, of, tap } from 'rxjs';
   providedIn: 'root',
 })
 export class HttpService {
-  private endpoint: string = "http://localhost:3000";
+  private endpoint: string = "https://divarchi.mah-asal.ir";
   public token: string = '';
 
   constructor(

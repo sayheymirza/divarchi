@@ -75,7 +75,7 @@ import { DialogFilterRequestComponent } from '../components/dialog-filter-reques
       </table>
     </section>
 
-    <section>
+    <section class="border-t">
       <mat-paginator 
         [length]="total"
         [pageSize]="limit"
@@ -174,7 +174,7 @@ export class RequestComponent {
   public fetch() {
     this.apiService.requests({
       filter: {
-        ...this.filters,
+        ...this.filter,
         deleted: 0,
       },
       page: this.page,

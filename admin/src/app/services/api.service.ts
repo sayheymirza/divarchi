@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpService } from './http.service';
+import qs from 'qs';
 
 @Injectable({
   providedIn: 'root'
@@ -104,7 +105,7 @@ export class ApiService {
   public roles(params: any = {}) {
     return this.httpService.request<any>({
       method: 'GET',
-      path: '/api/v1/firewall',
+      path: `/api/v1/firewall?${qs.stringify(params)}`
     })
   }
 
